@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="oxxo.studio">
+    <meta name="copyright" content="oxxo.studio">
+    <title>線上訂餐</title>
+    <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+    <style>
+        @import url("https://fonts.googleapis.com/css?family=Noto+Sans+TC&display=swap");
+        html,
+        body {
+            background-color: #2C5D63;
+            font-family: "Noto Sans TC", sans-serif !important;
+            color: #DFEBED;
+            font-weight: bold;
+        }
+        
+        button {
+            margin-top: 3vh;
+            margin-left: 3vh;
+            width: 80vw;
+            height: 15vw;
+            font-size: 11vw;
+            background: #ccc;
+            font-family: "Noto Sans TC", sans-serif !important;
+            font-weight: 1000;
+            border: 0 none;
+            cursor: pointer;
+            -webkit-border-radius: 5vw;
+            border-radius: 5vw;
+        }
+        
+        input {
+            margin-top: 3vh;
+            margin-left: 3vh;
+            width: 80vw;
+            height: 15vw;
+            font-size: 13vw;
+            padding: 5px 15px;
+            border: 2px black solid;
+            font-family: "Noto Sans TC", sans-serif !important;
+            font-weight: 1000;
+            cursor: pointer;
+            -webkit-border-radius: 5vw;
+            border-radius: 5vw;
+        }
+        
+        label {
+            font-size: 8vw;
+            font-family: "Noto Sans TC", sans-serif !important;
+            font-weight: 1000;
+        }
+        
+        h1 {
+            margin-top: 3vh;
+            margin-left: 3vh;
+            font-size: 10vw;
+            font-family: "Noto Sans TC", sans-serif !important;
+            font-weight: 1000;
+        }
+        
+        h3 {
+            margin-top: 3vh;
+            margin-left: 3vh;
+            font-size: 4vw;
+            font-family: "Noto Sans TC", sans-serif !important;
+            font-weight: 1000;
+        }
+        
+        input[type="radio"] {
+            margin-top: 1vh;
+            margin-left: 3vh;
+            width: 7vw;
+            height: 7vw;
+            padding: 5px 15px;
+            font-weight: 1000;
+        }
+    </style>
+    <script>
+        var appUrl = 'https://script.google.com/macros/s/AKfycby6cFlX8aqloRa1Juhb1TAAzzHjrTqpV5CuWp_btxLxG1zrn88zZGApBcDME57mbQ8T9A/exec';
+        var appUrl2 = 'https://script.google.com/macros/s/AKfycbydQgHE4pPYb_JMUTzJW4cyS-t3PBhlGTB0pyNjxyW2_jyp8KCjS6lrrOuOAWTHatiB/exec';
+        var number;
+
+        function Clear() {
+            $("#d1").empty();
+        }
+
+        function StartS() {
+            Clear();
+            let le = document.getElementById("d1");
+            le.innerHTML = "<input id='number' placeholder='輸入座號'><br><button onclick='OnClickCheck1()'>確認</button>"
+        }
+
+        function Get(text, foo = Alert1) {
+            parameter = {
+                url: "https://docs.google.com/spreadsheets/u/1/d/12SWuj4vPfMct7RIkur_Ch-hv9TQwl5SDJ8Jl8i4r1Sk/edit#gid=0",
+                name: '工作表1',
+                startRow: number + 1,
+                startColumn: 2,
+                thing: text
+            };
+            $.get(appUrl, parameter, function(data) {
+                foo(data);
+            });
+        }
+
+        function Post(foods, prices, text = "Default") {
+            parameter = {
+                url: "https://docs.google.com/spreadsheets/u/1/d/12SWuj4vPfMct7RIkur_Ch-hv9TQwl5SDJ8Jl8i4r1Sk/edit#gid=0",
+                name: '工作表1',
+                startRow: number + 1,
+                food: foods,
+                price: prices,
+                thing: text
+            };
+            $.get(appUrl2, parameter, function(data) {
+                console.log(data);
+                if (data == "ok") {
+                    document.getElementById("d1").innerHTML = "<h1>成功<br>已下單</h1>";
+                    $("#d0").empty();
+                } else if (data === "cancel") {
+                    document.getElementById("d1").innerHTML = "<h1>成功<br>已取消訂單</h1>";
+                    $("#d0").empty();
+                } else if (data == "ok2") {
+                    document.getElementById("d1").innerHTML = "<h1>成功<br>已更改訂單</h1>";
+                    $("#d0").empty();
+                } else if (data == "Error") {
+                    document.getElementById("d1").innerHTML = "<h1>失敗<br>訂餐已確認</h1>";
+                } else if (data == 'noMoney') {
+                    alert("餘額不足");
+                }
+            });
+        }
+
+        function StartFirst(data) {
+            if (data == "close") {
+                document.getElementById("d1").innerHTML = "<h1>網頁尚未開啟</h1>";
+            } else {
+                Get(text = "theName", foo = Alert1);
+                Get(text = "orderer", foo = Basic);
+                Get(text = "food", foo = ListFoods);
+            }
+        }
+
+        function Alert1(data) {
+            alert("歡迎 " + number + "號 " + data + " 同學!");
+        }
+
+        function ListFoods(data) {
+            var two = data.split("/,");
+            var foods = two[0].split(",");
+            var prices = two[1].split(",");
+            foods.pop();
+            let le = document.getElementById("d1");
+            for (let i = 0; i < 14; i++) {
+                if (prices[i] > 0) {
+                    le.innerHTML += `<input class='radio' id='p${i}'  data-price='${prices[i]}'type='radio' name='food' value='${foods[i]}'><label for=p${i}>${foods[i]} ${prices[i]}元</label><br>`
+                }
+            }
+            le.innerHTML += "<input class='radio' id='cancel' type='radio' name='food' value='cancel'><label for='cancel'>取消訂單</label><br>"
+            le.innerHTML += "<button onclick='OnClickCheck2()'>送出</button>";
+        }
+
+        function OnClickCheck1() {
+            number = parseInt(document.getElementById("number").value);
+            if (number > 0 && number < 38) {
+                Clear()
+                Get(text = "openCheck", foo = StartFirst);
+            } else {
+                alert("座號錯誤");
+            };
+        }
+
+        function OnClickCheck2() {
+            var radio = document.getElementsByName("food");
+            find: {
+                for (var i = 0; i < radio.length; i++) {
+                    if (radio[i].checked) {
+                        Post(radio[i].value, radio[i].dataset.price);
+                        break find;
+                    }
+                };
+                alert("未選取")
+            }
+        }
+
+        function Basic(data) {
+            let order = "";
+            let le = document.getElementById("d0");
+            [b, c, d, e, f] = data.split(",");
+            if (f === "Checked") {
+                order = `${d}_${e}元(已結帳)`;
+            } else if (f === "Default") {
+                order = "無訂單";
+            } else {
+                order = `${d}_${e}元(尚未結帳)`;
+            }
+            le.innerHTML = `<h3>${b} 目前訂單狀態:${order} 餘額:${c}</h3>`;
+        }
+    </script>
+</head>
+
+<body>
+    <div id="d0">
+    </div>
+    <div id="d1">
+    </div>
+    <script>
+        StartS();
+    </script>
+
+</body>
+
+</html>
